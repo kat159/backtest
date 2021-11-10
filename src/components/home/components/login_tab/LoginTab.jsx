@@ -5,7 +5,7 @@ import PubSub from 'pubsub-js'
 export default class LoginTab extends Component {
 
     logout = () => {
-        PubSub.publish('login_status', {loggedIn: false});
+        PubSub.publish('login_status', {loggedIn: false}); 
     }
 
     render() {
