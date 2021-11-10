@@ -1,8 +1,25 @@
 import React, { Component } from 'react'
 import LoginTab from '../login_tab/LoginTab'
 import MyNavLink from './MyNavLink'
+import PubSub from 'pubsub-js'
 
 export default class NavHeader extends Component {
+    state = {
+        loggedIn: false,
+        username: '',
+    }
+
+    componentDidMount() {
+        this.token = PubSub.subscribe('login_status', (msg, data) => {
+            this.setState(data);
+            console.log('11111111111111', data);
+        })
+    }
+
+    componentWillUnmount() {
+        PubSub.unsubscribe(this.token);
+    }
+
     render() {
         return (
             <div className='nav-header'>
@@ -14,7 +31,7 @@ export default class NavHeader extends Component {
                         <MyNavLink className="list-group-item" to='/log' >Backtest Log</MyNavLink>
                     </li>
                 </ul>
-                <LoginTab />
+                <LoginTab {...this.state} />
             </div>
         )
     }
