@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import LoginTab from '../login_tab/LoginTab'
 import MyNavLink from './MyNavLink'
-import PubSub from 'pubsub-js' 
-
+import PubSub from 'pubsub-js'  
+ 
 export default class NavHeader extends Component {
     state = {
         loggedIn: false,
