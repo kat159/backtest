@@ -11,6 +11,7 @@ export default class TableRow extends Component {
             <td>{data[1]}</td>
             <td>{data[2]}</td>
             <td>{data[3]}</td>
+            <td>{data[4]}</td>
         </tr>
         )
     }

@@ -1,104 +1,124 @@
 import React, { Component } from 'react'
 import MyNavLink from '../../nav_tab/MyNavLink'
-import { Link } from 'react-router-dom'
+import { Link, useHistory} from 'react-router-dom'
 import './test.css'
+import Header from './components/Header'
+import PositionOpen from './components/PositionOpen/PositionOpen'
+import PositionClose from './components/PositionClose/PositionClose'
+import BacktestParam from './components/BacktestParams/BacktestParam'
+import axios from 'axios'
+import PubSub from 'pubsub-js'
 
 export default class Test extends Component {
+    
+    state = {
+        name: '',
+        positionType: 'Long',
+        openCriterion: [
+            ['CLOSE', '>', '100'],
+        ], 
+        closeCriterion: [
+            ['CLOSE', '>', '100'],
+        ],
+        holdingDays: 1,
+        testParams: {
+            capital: 100000,
+            capitalAtRisk: 5,
+            commission: 0.08,
+            bidAskSpread: 0.02,
+            timePeriod: ['2020-01-01', '2021-01-01']
+        }
+    }
+
+    componentDidMount() {
+        this.token1 = PubSub.subscribe('update_open_criterion', (msg, data) => {
+            const {index, criteria} = data;
+            console.log(criteria)
+            const newCriterion = this.state.openCriterion;
+            newCriterion[index] = criteria;
+            this.setState({openCriterion: newCriterion});
+        })
+        this.token2 = PubSub.subscribe('add_open_criteria', (msg, criteria) => {
+            const newCriterion = this.state.openCriterion;
+            newCriterion.push(criteria);
+            this.setState({openCriterion: newCriterion});
+        })
+        this.token3 = PubSub.subscribe('update_close_criterion', (msg, data) => {
+            const {index, criteria} = data;
+            console.log(criteria)
+            const newCriterion = this.state.closeCriterion;
+            newCriterion[index] = criteria;
+            this.setState({closeCriterion: newCriterion});
+        })
+        this.token4 = PubSub.subscribe('add_close_criteria', (msg, criteria) => {
+            const newCriterion = this.state.closeCriterion;
+            newCriterion.push(criteria);
+            this.setState({closeCriterion: newCriterion});
+        })
+        this.token5 = PubSub.subscribe('update_holding_days', (msg, holdingDays) => {
+            this.setState({holdingDays: holdingDays});
+        })
+        this.token6 = PubSub.subscribe('update_test_params', (msg, testParams) => {
+            this.setState({testParams: testParams});
+        })
+    }
+
+    componentWillUnmount() {
+        PubSub.unsubscribe(this.token1);
+        PubSub.unsubscribe(this.token2);
+        PubSub.unsubscribe(this.token3);
+        PubSub.unsubscribe(this.token4);
+        PubSub.unsubscribe(this.token5);
+        PubSub.unsubscribe(this.token6);
+    }
+    
+    submit = () => {
+        console.log('===============submit======================')
+        console.log(JSON.stringify(this.state))
+        // let Vname = 'name'
+        // ***对象属性名引用变量的字符串***
+        // this.setState({[Vname]: 'JJJ'}) // {name: 'JJJ'}  
+        // console.log(this.state)
+        axios.defaults.baseURL = 'http://127.0.0.1:3000';
+        axios({
+            method: 'post',
+            url: '/run_test',
+            data: JSON.stringify(this.state),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(
+            res => {
+                console.log('RECEIVE:==============================')
+                console.log(res)
+                PubSub.publish('report_metrics', res.data);
+                PubSub.publish('test_log', [Date(), this.state.name, ])
+            },
+            err => {console.log(err)}
+        )
+        // 如果是函数组件， history = useHistory(); history.push() 
+        // this.props.history.push('/test-report')
+    }
+
     render() {
+        const {openCriterion, closeCriterion, testParams} = this.state
         return (
             <div>
-                <form action="http://localhost:3000/search" method="GET">
-                    <fieldset>
-                        <div className="field">
-                            <label>Strategy Name &nbsp;&nbsp;&nbsp;&nbsp;
-                                <input type='text' name='?' />
-                            </label>
-                        </div>
-
-                        <div className="field">
-                            <label>Position Type &nbsp;&nbsp;&nbsp;&nbsp;
-                                <select>
-                                    <option>Long</option>
-                                    <option>Short</option>
-                                </select>
-                            </label>
-                        </div>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend className='legend'>Position Opening</legend>
-                        <div className="field">
-                            <label className='select-box'><select>
-                                <option>Closing Price</option>
-                                <option>Opening Price</option>
-                            </select></label>
-                            <label className='select-box'><select>
-                                <option>Higher than</option>
-                                <option>Lower than</option>
-                            </select></label>
-                            <label className='select-box'><input type='number' defaultValue='100' >
-                            </input>&nbsp;$</label>
-                        </div>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend className='legend'>Position Closing</legend>
-                        <div className="field">
-                            <label className='select-box'>Exit when&nbsp;<select>
-                                <option>Closing Price</option>
-                                <option>Opening Price</option>
-                            </select></label>
-                            <label className='select-box'><select>
-                                <option>Higher than</option>
-                                <option>Lower than</option>
-                            </select></label>
-                            <label className='select-box'><input type='number' defaultValue='100' >
-                            </input>&nbsp;$</label>
-                        </div>
-                        <div className="field">
-                            <label>Close position after &nbsp;&nbsp;
-                                <input type='text' name='?' defaultValue='1' /> &nbsp;
-                                trading days
-                            </label>
-                        </div>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend className='legend'>Backtest Parameters</legend>
-                        <div className="field">
-                            <label>Initial Capital &nbsp;&nbsp;
-                                <input type='number' name='?' defaultValue='100000' /> &nbsp;
-                                $
-                            </label>
-                        </div>
-                        <div className="field">
-                            <label>Capital at Risk &nbsp;&nbsp;
-                                <input type='text' name='?' defaultValue='5' /> &nbsp;
-                                % of capital
-                            </label>
-                        </div>
-                        <div className="field">
-                            <label>Commission &nbsp;&nbsp;
-                                <input type='text' name='?' defaultValue='0.08' /> &nbsp;
-                                % of open position
-                            </label>
-                        </div>
-                        <div className="field">
-                            <label>Bid-Ask Spread &nbsp;&nbsp;
-                                <input type='text' name='?' defaultValue='0.02' /> &nbsp;
-                                $
-                            </label>
-                        </div>
-                        <div className="field">
-                            <label>Testing Time Period &nbsp;&nbsp;
-                                <input type='date' name='?' defaultValue='2020-Jan-1' /> &nbsp;
-                                to &nbsp;
-                                <input type='date' name='?' defaultValue='2021-Jan-1' />
-                            </label>
-                        </div>
-                    </fieldset>
+                
+                <form action="http://localhost:3000/run_test" method="GET">
+                    <Header ref={c => this.header = c} />
+                    <PositionOpen criterion={openCriterion} ref={c => this.positionOpen = c} />
+                    <PositionClose criterion={closeCriterion} ref={c => this.positionClose = c} />
+                    <BacktestParam testParams={testParams} ref={c => this.backtestParam = c} />
+                    {/* <input onClick={this.submit} className='btn btn-info' type='button' value="MySubmit" /> */}
+                    {/* <br /> */}
+                    {/* <br /> */}
+                    {/* <input type='submit' value="Submit" /> */}
                 </form>
-                <Link className='btn btn-info' style={{marginLeft: '20px'}} to='/test-report'>Run Test</Link>
+                {/* <button onClick={this.submit}>run</button> */}
+                {/* <br /> */}
+                <Link onClick={this.submit} className='btn btn-info' style={{marginLeft: '20px'}} to='/test-report'>Run Test</Link>
+                
             </div>
         )
     }

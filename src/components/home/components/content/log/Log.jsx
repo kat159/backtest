@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import TableRow from './TableRow'
+import PubSub from 'pubsub-js'
 
 export default class Log extends Component {
     
+         
     render() {
+        // TODO: pull from database
         const dataList = [
-            ['2021-Oct-28', -50, 0.1, 50],
-            ['2021-Jan-28', -70, 0.3, 70],
+            ['2021-01-01', 'Strategy1', -20, 0.7, 20]
         ]
         return (
             <div>
@@ -15,6 +17,7 @@ export default class Log extends Component {
                 <thead>
                 <tr>
                     <th>Test Date</th>
+                    <th>Strategy Name</th>
                     <th>Average Profit %</th>
                     <th>Sharpe Ratio</th>
                     <th>Max Drawdown %</th>

@@ -22,6 +22,8 @@ export default class LoginPage extends Component {
     }
     
     login = () => {
+        // console.log(this.password.value)
+        // console.log(this.username.value)
         axios.defaults.baseURL = 'http://127.0.0.1:3000';
         axios({
             method: 'get',
@@ -69,7 +71,7 @@ export default class LoginPage extends Component {
                 <form action='/login' method='post' id='loginForm'>
                     <div className="field">
                         <label>Username: &nbsp;&nbsp;&nbsp;&nbsp;
-                            <input onKeyUp={this.handleKeyUp} type='text' name='username' />
+                            <input ref={c => this.username = c} onKeyUp={this.handleKeyUp} type='text' name='username' />
                             {
                                 this.state.UsernameExist ? <span> Username exists ! </span> : 
                                 this.state.invalidUsername ? <span> Username not exists !</span> : <span></span>
@@ -78,7 +80,7 @@ export default class LoginPage extends Component {
                     </div>
                     <div className="field">
                         <label>Password: &nbsp;&nbsp;&nbsp;&nbsp;
-                            <input onKeyUp={this.handleKeyUp} type='text' name='password' />
+                            <input ref={c => this.password = c} onKeyUp={this.handleKeyUp} type='text' name='password' />
                             {
                                 this.state.invalidPassword ? <span> Incorrect password ! </span> : <span></span>
                             }
