@@ -79,7 +79,7 @@ export default class Test extends Component {
         // ***对象属性名引用变量的字符串***
         // this.setState({[Vname]: 'JJJ'}) // {name: 'JJJ'}  
         // console.log(this.state)
-        axios.defaults.baseURL = 'http://127.0.0.1:3000';
+        axios.defaults.baseURL = 'http://127.0.0.1:3333';
         axios({
             method: 'post',
             url: '/run_test',
@@ -105,7 +105,7 @@ export default class Test extends Component {
         return (
             <div>
                 
-                <form action="http://localhost:3000/run_test" method="GET">
+                <form action="http://localhost:3333/run_test" method="GET">
                     <Header ref={c => this.header = c} />
                     <PositionOpen criterion={openCriterion} ref={c => this.positionOpen = c} />
                     <PositionClose criterion={closeCriterion} ref={c => this.positionClose = c} />

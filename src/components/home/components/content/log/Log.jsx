@@ -12,7 +12,7 @@ export default class Log extends Component {
         ]
         return (
             <div>
-                <table>
+                <table> 
                 <caption></caption>
                 <thead>
                 <tr>

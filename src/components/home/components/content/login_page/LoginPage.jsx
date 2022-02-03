@@ -27,19 +27,22 @@ export default class LoginPage extends Component {
         axios.defaults.baseURL = 'http://127.0.0.1:3000';
         axios({
             method: 'get',
-            url: '/login',
+            url: '/users',
             params: this.userData,
         }).then(
             res => {
                 console.log(res);
-                if (res.data === 'success') { // 登录成功
+                if (res.data[0] === undefined) { 
+                    // username not exist
+                    this.setState({invalidUsername: true, invalidPassword: false, UsernameExist: false, successSignUp: false})
+                } else if (res.data[0].password !== this.userData.password) { 
+                    // incorrect password
+                    this.setState({invalidUsername: false, invalidPassword: true, UsernameExist: false, successSignUp: false});
+                } else { 
+                    // sucessfully logged in
                     this.setState({invalidPassword: false, invalidUsername: false, UsernameExist: false, successSignUp: false})
                     PubSub.publish('login_status', {loggedIn: true, username: this.userData.username});
                     this.props.history.push('/test');
-                } else if (res.data === 'password incorrect') { // 密码错误
-                    this.setState({invalidUsername: false, invalidPassword: true, UsernameExist: false, successSignUp: false});
-                } else { // 用户名不存在
-                    this.setState({invalidUsername: true, invalidPassword: false, UsernameExist: false, successSignUp: false})
                 }
                 console.log(this.state)
             },
@@ -49,16 +52,19 @@ export default class LoginPage extends Component {
     signUp = () => {
         axios.defaults.baseURL = 'http://127.0.0.1:3000';
         axios({
-            method: 'get',
-            url: '/signup',
+            method: 'post',
+            url: '/users',
             params: this.userData,
+            // 如果params换成data(body)， 简单的设置allow origin无法跨域，可能是含body post就会发送两次请求(optional)？
+            // 好像fetch的post带body不会发送optional？
         }).then(
             res => {
                 console.log(res);
-                if (res.data === true) { // 注册成功
-                    this.setState({successSignUp: true, invalidPassword: false, invalidUsername:false, UsernameExist: false});
-                } else {
+                if (res.data.err === "user exist") { 
+                    // user exist
                     this.setState({UsernameExist: true, successSignUp: false, invalidPassword: false, invalidUsername:false, })
+                } else {
+                    this.setState({successSignUp: true, invalidPassword: false, invalidUsername:false, UsernameExist: false});
                 }
                 console.log(this.state)
             },
